@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         await client.connect();
+
         const inventoryItemsCollection = client
             .db("groceryWDB")
             .collection("inventoryItems");
@@ -33,7 +34,7 @@ async function run() {
         //////////////////////////
 
         //Inserting single inventory item
-        app.post("/inventoryItem", async (req, res) => {
+        app.post("/inventory-item", async (req, res) => {
             const inventoryItem = req.body;
             const result = await inventoryItemsCollection.insertOne(inventoryItem);
             res.send(result);
@@ -56,6 +57,18 @@ async function run() {
             const query = { _id: ObjectId(categoryId) };
             const category = await categoriesCollection.findOne(query);
             res.send(category);
+        });
+
+        //Getting all inventory items
+        app.get("/inventory-items", async (req, res) => {
+            let query = {};
+            if (req.query.addedBy) {
+                const addedBy = req.query.addedBy;
+                query = { addedBy };
+            }
+            const cursor = inventoryItemsCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
         });
 
         //Getting all categories
@@ -100,7 +113,17 @@ async function run() {
             const result = await categoriesCollection.deleteOne(filter);
             res.send(result);
         });
+
+        //Deleting single inventory item
+        app.delete("/inventory-item/:id", async (req, res) => {
+            const itemId = req.params.id;
+            const filter = { _id: ObjectId(itemId) };
+            const result = await inventoryItemsCollection.deleteOne(filter);
+            res.send(result);
+        });
+        //
     } finally {
+        //
     }
 }
 
@@ -112,5 +135,5 @@ app.get("/", (req, res) => {
 
 //Serving to port
 app.listen(port, () => {
-    console.log("grocery-warehouse-server is listening to port:", port);
+    console.log("nt-grocery-stock-server is listening to port:", port);
 });

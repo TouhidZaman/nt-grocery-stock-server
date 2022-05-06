@@ -1,5 +1,5 @@
 {
-  "name": "grocery-warehouse-server",
+  "name": "nt-grocery-stock-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
