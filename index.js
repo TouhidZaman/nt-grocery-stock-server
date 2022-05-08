@@ -34,14 +34,14 @@ async function run() {
         //////////////////////////
 
         //Inserting single inventory item
-        app.post("/inventory-item", async (req, res) => {
+        app.post("/inventory-items", async (req, res) => {
             const inventoryItem = req.body;
             const result = await inventoryItemsCollection.insertOne(inventoryItem);
             res.send(result);
         });
 
         //Inserting single category
-        app.post("/category", async (req, res) => {
+        app.post("/categories", async (req, res) => {
             const category = req.body;
             const result = await categoriesCollection.insertOne(category);
             res.send(result);
@@ -51,24 +51,48 @@ async function run() {
         //// Find Operations ////
         ////////////////////////
 
-        //Getting category by id
-        app.get("/category/:id", async (req, res) => {
-            const categoryId = req.params.id;
-            const query = { _id: ObjectId(categoryId) };
-            const category = await categoriesCollection.findOne(query);
-            res.send(category);
+        //Getting inventory item by id
+        app.get("/inventory-items/:id", async (req, res) => {
+            const itemId = req.params.id;
+            // console.log(itemId);
+            try {
+                const query = { _id: ObjectId(itemId) };
+                const result = await inventoryItemsCollection.findOne(query);
+                res.send(result);
+            } catch {
+                res.status(400).send({ message: "invalid item id" });
+            }
         });
 
         //Getting all inventory items
         app.get("/inventory-items", async (req, res) => {
             let query = {};
+            let cursor;
             if (req.query.addedBy) {
                 const addedBy = req.query.addedBy;
                 query = { addedBy };
             }
-            const cursor = inventoryItemsCollection.find(query);
+            if (req.query.limitTo) {
+                const limitTo = parseInt(req.query.limitTo);
+                cursor = inventoryItemsCollection.find(query).limit(limitTo);
+                // console.log(limitTo);
+            } else {
+                cursor = inventoryItemsCollection.find(query);
+            }
             const result = await cursor.toArray();
             res.send(result);
+        });
+
+        //Getting category by id
+        app.get("/categories/:id", async (req, res) => {
+            const categoryId = req.params.id;
+            try {
+                const query = { _id: ObjectId(categoryId) };
+                const category = await categoriesCollection.findOne(query);
+                res.send(category);
+            } catch {
+                res.status(400).send({ message: "invalid category id" });
+            }
         });
 
         //Getting all categories
@@ -83,43 +107,78 @@ async function run() {
         //// Update Operations ////
         //////////////////////////
 
+        //Updating single inventory item
+        app.put("/inventory-items/:id", async (req, res) => {
+            const itemId = req.params.id;
+            try {
+                const updatedItem = req.body;
+                const filter = { _id: ObjectId(itemId) };
+                const updateDoc = {
+                    $set: {
+                        ...updatedItem,
+                    },
+                };
+                const options = { upsert: true };
+                const result = await inventoryItemsCollection.updateOne(
+                    filter,
+                    updateDoc,
+                    options
+                );
+                res.send(result);
+            } catch {
+                res.status(400).send({ message: "invalid item id" });
+            }
+        });
+
         //Updating single category
-        app.put("/category/:id", async (req, res) => {
+        app.put("/categories/:id", async (req, res) => {
             const categoryId = req.params.id;
-            const updatedCategory = req.body;
-            const filter = { _id: ObjectId(categoryId) };
-            const updateDoc = {
-                $set: {
-                    ...updatedCategory,
-                },
-            };
-            const options = { upsert: true };
-            const result = await categoriesCollection.updateOne(
-                filter,
-                updateDoc,
-                options
-            );
-            res.send(result);
+            try {
+                const updatedCategory = req.body;
+                const filter = { _id: ObjectId(categoryId) };
+                const updateDoc = {
+                    $set: {
+                        ...updatedCategory,
+                    },
+                };
+                const options = { upsert: true };
+                const result = await categoriesCollection.updateOne(
+                    filter,
+                    updateDoc,
+                    options
+                );
+                res.send(result);
+            } catch {
+                res.status(400).send({ message: "invalid category id" });
+            }
         });
 
         //////////////////////////
         //// Delete Operations ///
         //////////////////////////
 
-        //Deleting single category
-        app.delete("/category/:id", async (req, res) => {
-            const categoryId = req.params.id;
-            const filter = { _id: ObjectId(categoryId) };
-            const result = await categoriesCollection.deleteOne(filter);
-            res.send(result);
+        //Deleting single inventory item
+        app.delete("/inventory-items/:id", async (req, res) => {
+            const itemId = req.params.id;
+            try {
+                const filter = { _id: ObjectId(itemId) };
+                const result = await inventoryItemsCollection.deleteOne(filter);
+                res.send(result);
+            } catch {
+                res.status(400).send({ message: "invalid item id" });
+            }
         });
 
-        //Deleting single inventory item
-        app.delete("/inventory-item/:id", async (req, res) => {
-            const itemId = req.params.id;
-            const filter = { _id: ObjectId(itemId) };
-            const result = await inventoryItemsCollection.deleteOne(filter);
-            res.send(result);
+        //Deleting single category
+        app.delete("/categories/:id", async (req, res) => {
+            const categoryId = req.params.id;
+            try {
+                const filter = { _id: ObjectId(categoryId) };
+                const result = await categoriesCollection.deleteOne(filter);
+                res.send(result);
+            } catch {
+                res.status(400).send({ message: "invalid category id" });
+            }
         });
         //
     } finally {
