@@ -217,7 +217,7 @@ run().catch(console.dir);
 
 app.get("/", (req, res) => {
     res.send({status: true, data: {
-        message: "Hello from grocery stock server",
+        message: "welcome to grocery stock server",
         author: "Muhammad Touhiduzzaman"
     }});
 });
