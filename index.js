@@ -216,7 +216,10 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-    res.send("welcome to grocery warehouse server");
+    res.send({status: true, data: {
+        message: "Hello from grocery stock server",
+        author: "Muhammad Touhiduzzaman"
+    }});
 });
 
 //Serving to port
